@@ -1,0 +1,8 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'ru.sibsutise.MyCalc'
+
+run{
+    standardInput = System.in
+}
