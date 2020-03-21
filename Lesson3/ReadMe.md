@@ -5,4 +5,4 @@
 5) Create HashSet, TreeSet, ArrayList, LinkedList and measure time of add and remove elements of user *
 
 * I create managers collections
-** Now I don`t understand how to remove objects in any collections.
+

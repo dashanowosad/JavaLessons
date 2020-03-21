@@ -183,7 +183,7 @@ public class Manager extends User implements CSV, List_and_Set, Comparable <Mana
 
         /*for(i = 0; i < this.Size; ++i)
             this.HashMan.remove(i);*/
-        this.HashMan.removeAll(this.HashMan);
+        this.HashMan.clear();
 
     }
 
@@ -267,9 +267,10 @@ public class Manager extends User implements CSV, List_and_Set, Comparable <Mana
 
     @Override
     public void RemoveLinkedList() {
-        Integer i;
+        /*Integer i;
         for(i = 0; i < this.Size; ++i)
-            this.LinkedMan.removeFirst();
+            this.LinkedMan.removeFirst();*/
+        this.LinkedMan.clear();
     }
 
     @Override
