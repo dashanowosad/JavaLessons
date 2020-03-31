@@ -5,3 +5,4 @@ gradlew*
 .idea
 *.swp
 *.class
+out
