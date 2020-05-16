@@ -1,0 +1,3 @@
+1) Time to add 1 million words with .setAutoCommit(true) and .setAutoCommit(false) MySQL Workbench
+2) DCL: Data Control Lang: GRANT, REVOKE, GRANT SELECT, INSERT TO user1, REVOKE ALL FROM user1, CREATE USER...
+3) NoSQL, install MongoDB (+ Robo3T)
