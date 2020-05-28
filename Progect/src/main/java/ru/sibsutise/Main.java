@@ -101,20 +101,18 @@ class MyThread implements Runnable{
             find = str.substring(str.indexOf('&') + 1, str.length());
             find = find.substring(0, find.indexOf(' '));
 
-            //System.out.println(find);
+            System.out.println(find);
 
             if(str.contains("/get_all_users")) {
                 s = JsonToString();
                 s = s.replace("{\"spis\":[\"","").replace("\",\"", "").replace("\"]}","");
-                //System.out.println(s.toString());
                 out.write(s.toString());
             }
             else if(str.contains("/find")){
-                if(!str.contains("gt") && !str.contains("eq")){
+                if(!str.contains("%3E") && !str.contains("%3C")){
                     str1 = find.substring(0, find.indexOf('&'));
                     str2 = find.substring(find.indexOf('&') + 1, find.length());
 
-                    System.out.println(str1);
                     if(str2.matches("[0-9]+")) {
                         number1 = Integer.valueOf(str2);
                         searchObj.append(str1, number1);
@@ -122,15 +120,33 @@ class MyThread implements Runnable{
                     else
                         searchObj.append(str1, str2);
 
-                    for (Document doc : this.collection.find(searchObj))
-                        s += "<dt>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
-
-                    if(s.length() == 0)
-                        s +="<dt>" + "Not found" + "</dt>";
-
-                    System.out.println(s);
-                    out.write(s);
                 }
+
+                else{
+                    str1 = find.substring(0, find.indexOf('&'));
+                    sign = find.substring(find.indexOf('&') + 1, find.indexOf('&') + 4);
+                    str2 = find.substring(find.indexOf('&') + 4, find.length());
+
+                    if(sign.equals("%3C"))
+                        sign = "$lt";
+                    else if (sign.equals("%3E"))
+                        sign = "$gt";
+
+                    if(str2.matches("[0-9]+")) {
+                        number1 = Integer.valueOf(str2);
+                        searchObj.append(str1, new BasicDBObject(sign,number1));
+                    }
+
+                }
+
+                for (Document doc : this.collection.find(searchObj))
+                    s += "<dt>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
+
+                if(s.length() == 0)
+                    s +="<dt>" + "Not found" + "</dt>";
+
+                out.write(s);
+
             }
 
         }
