@@ -119,7 +119,6 @@ class MyThread implements Runnable{
                     }
                     else
                         searchObj.append(str1, str2);
-
                 }
 
                 else{
@@ -147,6 +146,48 @@ class MyThread implements Runnable{
 
                 out.write(s);
 
+            }
+
+            else if (str.contains("/delete")){
+                if(!str.contains("%3E") && !str.contains("%3C")){
+                    str1 = find.substring(0, find.indexOf('&'));
+                    str2 = find.substring(find.indexOf('&') + 1, find.length());
+
+                    if(str2.matches("[0-9]+")) {
+                        number1 = Integer.valueOf(str2);
+                        searchObj.append(str1, number1);
+                    }
+                    else
+                        searchObj.append(str1, str2);
+                    System.out.println(searchObj);
+                }
+
+                else{
+                    str1 = find.substring(0, find.indexOf('&'));
+                    sign = find.substring(find.indexOf('&') + 1, find.indexOf('&') + 4);
+                    str2 = find.substring(find.indexOf('&') + 4, find.length());
+
+                    if(sign.equals("%3C"))
+                        sign = "$lt";
+                    else if (sign.equals("%3E"))
+                        sign = "$gt";
+
+                    if(str2.matches("[0-9]+")) {
+                        number1 = Integer.valueOf(str2);
+                        searchObj.append(str1, new BasicDBObject(sign,number1));
+                    }
+
+                }
+                this.collection.deleteMany(searchObj);
+
+                for (Document doc : this.collection.find())
+                    s += "<dt>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
+
+
+                if(s.length() == 0)
+                    s +="<dt>" + "Not found and not delete" + "</dt>";
+
+                out.write(s);
             }
 
         }

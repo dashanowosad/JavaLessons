@@ -29,13 +29,18 @@
         background-color: #ffdc85;
         height: 5000px;
     }
+
     select{
         margin-top: 55px;
-        margin-left: -165px;
+        margin-left: -125px;
     }
     form{
         margin-top: -33px;
-        margin-left: -70px;
+        margin-left: -30px;
+    }
+
+    #DeleteButton{
+        margin-left: -180px;
     }
 </style>
 <script>
@@ -75,19 +80,41 @@
             }
         });
     }
+
+    /**
+     * @return {boolean}
+     */
+    function Delete() {
+        if (!confirm('Do you really want to delete an entry?'))
+            return false;
+        else {
+            var param = document.getElementById("select").value;
+            var value = document.getElementById("FormSearch").value;
+            var items = [];
+            $.ajax({
+                method: 'GET',
+                url: '/delete&' + param + '&' + value,
+                success: function (data) {
+                    console.log(data);
+
+                    items.push(data);
+                    $("#dl").html(items);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+    }
 </script>
 
 <body>
 
-
 <div class = "row">
     <div class = "col-md-1"></div>
-    <div class = "col-md-4">
+    <div class = "col-md-5" >
         <button class="btn btn-info"  onclick = "WatchText()">Show list</button>
         <dl id = "dl" class="list-group"></dl>
-    </div>
-    <div class="col-md-2">
-        <button class="btn btn-info" onclick = "Search()">Search</button>
     </div>
     <div class="col-md-2">
         <select id="select">
@@ -99,8 +126,12 @@
             <p><input id="FormSearch" maxlength="25" size="40" value="Value"></p>
         </form>
     </div>
-</div>
-
+    <div class="col-md-2">
+        <button id ="SearchButton" class="btn btn-info" onclick = "Search()">Search</button>
+    </div>
+    <div class="col-md-2">
+        <button id ="DeleteButton" class="btn btn-info" onclick="Delete()">Delete</button>
+    </div>
 </div>
 
 
