@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>JavaLessons</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<style>
+    button{
+        margin-left: 50px;
+        margin-top: 50px;
+    }
+    dl{
+        margin-left: 50px;
+        margin-top: 50px;
+    }
+    dt{
+        background-color: #ffdc85;
+        color: #855800;
+        border: 4px double black;
+    }
+    dt:hover{
+        background-color: #ffcf40;
+    }
+    .col-md-1{
+        background-color: #ffdc85;
+        height: 5000px;
+    }
+    select{
+        margin-top: 55px;
+        margin-left: -165px;
+    }
+    form{
+        margin-top: -33px;
+        margin-left: -70px;
+    }
+</style>
+<script>
+
+    function WatchText() {
+        var items = [];
+        $.ajax({
+            method: 'GET',
+            url:'/get_all_users',
+            success:function (data) {
+                console.log(data);
+
+                items.push(data);
+                $("#dl").html(items);
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function Search() {
+        var param = document.getElementById("select").value;
+        var value = document.getElementById("FormSearch").value;
+        var items = [];
+        $.ajax({
+            method: 'GET',
+            url:'/find&' + param + '&' + value,
+            success:function (data) {
+                console.log(data);
+
+                items.push(data);
+                $("#dl").html(items);
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+</script>
+
+<body>
+
+
+<div class = "row">
+    <div class = "col-md-1"></div>
+    <div class = "col-md-4">
+        <button class="btn btn-info"  onclick = "WatchText()">Show list</button>
+        <dl id = "dl" class="list-group"></dl>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-info" onclick = "Search()">Search</button>
+    </div>
+    <div class="col-md-2">
+        <select id="select">
+            <option>name</option>
+            <option>age</option>
+            <option>phone</option>
+        </select>
+        <form action="handler.php">
+            <p><input id="FormSearch" maxlength="25" size="40" value="Value"></p>
+        </form>
+    </div>
+</div>
+
+</div>
+
+
+</body>
+</html>
