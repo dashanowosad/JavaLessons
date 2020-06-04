@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html>
 <head>
     <meta charset="UTF-8">
@@ -8,105 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
-<style>
-    button{
-        margin-left: 50px;
-        margin-top: 50px;
-    }
-    dl{
-        margin-left: 50px;
-        margin-top: 50px;
-    }
-    dt{
-        background-color: #ffdc85;
-        color: #855800;
-        border: 4px double black;
-    }
-    dt:hover{
-        background-color: #ffcf40;
-    }
-    .col-md-1{
-        background-color: #ffdc85;
-        height: 5000px;
-    }
-
-    select{
-        margin-top: 55px;
-        margin-left: -125px;
-    }
-    form{
-        margin-top: -33px;
-        margin-left: -30px;
-    }
-
-    #DeleteButton{
-        margin-left: -180px;
-    }
-</style>
-<script>
-
-    function WatchText() {
-        var items = [];
-        $.ajax({
-            method: 'GET',
-            url:'/get_all_users',
-            success:function (data) {
-                console.log(data);
-
-                items.push(data);
-                $("#dl").html(items);
-            },
-            error: function (error) {
-                console.log(error);
-            }
-        });
-    }
-
-    function Search() {
-        var param = document.getElementById("select").value;
-        var value = document.getElementById("FormSearch").value;
-        var items = [];
-        $.ajax({
-            method: 'GET',
-            url:'/find&' + param + '&' + value,
-            success:function (data) {
-                console.log(data);
-
-                items.push(data);
-                $("#dl").html(items);
-            },
-            error: function (error) {
-                console.log(error);
-            }
-        });
-    }
-
-    /**
-     * @return {boolean}
-     */
-    function Delete() {
-        if (!confirm('Do you really want to delete an entry?'))
-            return false;
-        else {
-            var param = document.getElementById("select").value;
-            var value = document.getElementById("FormSearch").value;
-            var items = [];
-            $.ajax({
-                method: 'GET',
-                url: '/delete&' + param + '&' + value,
-                success: function (data) {
-                    console.log(data);
-
-                    items.push(data);
-                    $("#dl").html(items);
-                },
-                error: function (error) {
-                    console.log(error);
-                }
-            });
-        }
-    }
-</script>
 
 <body>
 
@@ -114,9 +15,13 @@
     <div class = "col-md-1"></div>
     <div class = "col-md-5" >
         <button class="btn btn-info"  onclick = "WatchText()">Show list</button>
-        <dl id = "dl" class="list-group"></dl>
+        <button id ="SortButName" class="btn btn-warning" onclick = "SortByName()">Sort By Name</button>
+        <button id ="SortButAge" class="btn btn-warning" onclick = "SortByAge()">Sort By Age</button>
+        <dl id = "dl" class="list-group"  data-toggle="tooltip" data-placement="right" title="Click to update"></dl>
+
     </div>
-    <div class="col-md-2">
+    <div class="col-md-3">
+
         <select id="select">
             <option>name</option>
             <option>age</option>
@@ -125,15 +30,136 @@
         <form action="handler.php">
             <p><input id="FormSearch" maxlength="25" size="40" value="Value"></p>
         </form>
+
+        <p id ="InsertText">Insert new:</p>
+
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Name</span>
+            </div>
+            <input id="Name" type="text" aria-label="First name" class="form-control">
+        </div>
+
+        <div id="NameVis" class="alert-danger" role="alert">
+            Username can`t be blank
+        </div>
+
+        <div class="input-group" style="margin-top: 20px">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Age</span>
+            </div>
+            <input id ="Age" type="text" aria-label="First name" class="form-control">
+        </div>
+
+        <div id ="AgeVis" class="alert-danger" role="alert">
+            Age can`t be blank
+        </div>
+
+        <div class="input-group" style="margin-top: 20px">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Phone</span>
+            </div>
+            <input id="Phone" type="text" aria-label="First name" class="form-control">
+        </div>
+
+        <div id="PhoneVis" class="alert-danger" role="alert">
+            Phone can`t be blank
+        </div>
+
+        <p id="TextAnother">Another parameters:</p>
+
+        <div>
+            <div class="input-group" style="margin-top: 20px">
+                <input type="text" aria-label="First name" class="form-control">
+                <input type="text" aria-label="Last name" class="form-control">
+            </div>
+            <div class="input-group">
+                <input type="text" aria-label="First name" class="form-control">
+                <input type="text" aria-label="Last name" class="form-control">
+            </div>
+            <div class="input-group">
+                <input type="text" aria-label="First name" class="form-control">
+                <input type="text" aria-label="Last name" class="form-control">
+            </div>
+            <div class="input-group">
+                <input type="text" aria-label="First name" class="form-control">
+                <input type="text" aria-label="Last name" class="form-control">
+            </div>
+            <div class="input-group">
+                <input type="text" aria-label="First name" class="form-control">
+                <input type="text" aria-label="Last name" class="form-control">
+            </div>
+
+        </div>
+
     </div>
-    <div class="col-md-2">
-        <button id ="SearchButton" class="btn btn-info" onclick = "Search()">Search</button>
-    </div>
-    <div class="col-md-2">
-        <button id ="DeleteButton" class="btn btn-info" onclick="Delete()">Delete</button>
+
+    <div class="col-md-3">
+        <button id ="SearchButton" class="btn btn-info"  onclick = "Search()">Search</button>
+        <button id ="DeleteButton" class="btn btn-danger"  data-toggle="modal" onclick="SearchToDel()">Delete</button>
+        <button id="AddButton" class="btn btn-info" onclick="Add()" >Add</button>
+
     </div>
 </div>
 
 
+
+<!-- Modal Window (Delete Yes/No)-->
+<div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ModalLabel">Confirm the deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Do you really want to delete a user or users?
+            </div>
+            <div  class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="Delete()">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal to update-->
+<div id="ModalUpdate" class="modal fade bd-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <label for="Edit">Edit:</label>
+            <span id = "EditSpan" class="input-group-text"></span>
+            <input id="Edit">
+            <div  class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="Update()">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal error to del-->
+<div class="modal fade" id="ModalError" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                This element/elements was not found
+            </div>
+            <div  class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

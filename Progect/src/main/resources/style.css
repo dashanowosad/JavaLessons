@@ -1,0 +1,69 @@
+
+button{
+    margin-left: 50px;
+    margin-top: 50px;
+}
+dl{
+    margin-left: 50px;
+    margin-top: 50px;
+}
+dt{
+    background-color: #ffdc85;
+    color: #855800;
+    border: 4px double black;
+}
+dt:hover{
+    background-color: #ffcf40;
+}
+.col-md-1{
+    background-color: #ffdc85;
+    height: 5000px;
+}
+
+select{
+    margin-top: 55px;
+    margin-left: -125px;
+}
+form{
+    margin-top: -33px;
+    margin-left: -30px;
+}
+
+#DeleteButton{
+    margin-left: 10px;
+    margin-top: -270px;
+}
+#SearchButton{
+    margin-left: -100px;
+    margin-top: -270px;
+}
+#Spin{
+    margin-left: 200px;
+    margin-top:80px;
+}
+
+#SortButName{
+    margin-left: 10px;
+}
+#SortButAge{
+    margin-left: 10px;
+}
+#InsertText{
+    margin-top: 50px;
+    font-size: 20px;
+    font-style: italic;
+}
+
+#TextAnother{
+    margin-top: 10px;
+    font-size: 20px;
+    font-style: italic;
+}
+#AddButton{
+    margin-top: 600px;
+    margin-left: -50px;
+}
+
+.alert-danger{
+    visibility: hidden;
+}

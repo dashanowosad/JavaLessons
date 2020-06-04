@@ -8,6 +8,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.io.File;
 import java.io.FileReader;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
+
+import java.util.Comparator;
 
 
 class Base{
@@ -47,6 +50,7 @@ class Base{
     }
 }
 
+
 class MyThread implements Runnable{
     private Socket client;
     private PrintWriter out;
@@ -69,17 +73,26 @@ class MyThread implements Runnable{
         Base base = new Base();
         //base.setStatus("OK");
 
+
+        //BasicDBObject sortObj = new BasicDBObject();
+        //sortObj.append("name",1);
         ArrayList <String> str = new ArrayList<>();
+        int  i= 0;
         for(Document doc: this.collection.find()) {
-            str.add("<dt>" +doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>");
+            str.add("<dt id =" + i+ " onclick=UpdateModal(this)>" +doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>");
             //System.out.println(doc.toString());
+            ++i;
         }
             base.setSpis(str);
+
+
+
+
 
         return mappper.writeValueAsString(base);
     }
 
-    private String Check() throws JsonProcessingException {
+    private String Check() throws JsonProcessingException  {
         String str = null;
         String find = null;
 
@@ -88,27 +101,53 @@ class MyThread implements Runnable{
 
         BasicDBObject searchObj = new BasicDBObject();
         BasicDBObject changeObj = new BasicDBObject();
+        BasicDBObject sortObj = new BasicDBObject();
+
         Integer number1 = null, number2 = null;
 
         ArrayList <String> S = new ArrayList<>();
 
         String s = "";
+
+
+
         if(in.hasNext()){
             str = in.nextLine();
 
 
-
             find = str.substring(str.indexOf('&') + 1, str.length());
             find = find.substring(0, find.indexOf(' '));
-
-            System.out.println(find);
 
             if(str.contains("/get_all_users")) {
                 s = JsonToString();
                 s = s.replace("{\"spis\":[\"","").replace("\",\"", "").replace("\"]}","");
                 out.write(s.toString());
             }
+            else if (str.contains("/sort_by_name")){
+
+                sortObj.append("name",1);
+                int i = 0;
+                for (Document doc : this.collection.find().sort(sortObj)) {
+                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
+                    ++i;
+                }
+                out.write(s);
+
+            }
+
+            else if (str.contains("/sort_by_age")){
+
+                sortObj.append("age",1);
+                int i = 0;
+                for (Document doc : this.collection.find().sort(sortObj)) {
+                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
+                    ++i;
+                }
+                out.write(s);
+
+            }
             else if(str.contains("/find")){
+
                 if(!str.contains("%3E") && !str.contains("%3C")){
                     str1 = find.substring(0, find.indexOf('&'));
                     str2 = find.substring(find.indexOf('&') + 1, find.length());
@@ -137,10 +176,11 @@ class MyThread implements Runnable{
                     }
 
                 }
-
-                for (Document doc : this.collection.find(searchObj))
-                    s += "<dt>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
-
+                int i = 0;
+                for (Document doc : this.collection.find(searchObj)) {
+                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
+                    ++i;
+                }
                 if(s.length() == 0)
                     s +="<dt>" + "Not found" + "</dt>";
 
@@ -180,12 +220,80 @@ class MyThread implements Runnable{
                 }
                 this.collection.deleteMany(searchObj);
 
-                for (Document doc : this.collection.find())
-                    s += "<dt>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
-
+                int i = 0;
+                for (Document doc : this.collection.find()) {
+                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
+                    ++i;
+                }
 
                 if(s.length() == 0)
                     s +="<dt>" + "Not found and not delete" + "</dt>";
+
+                out.write(s);
+            }
+
+            else if(str.contains("/insert")){
+                find = find.replace("%20","");
+
+
+                String[] tmp = find.split("&");
+
+                Document newDoc = new Document();
+
+                for (int i = 1; i < tmp.length; i+=2){
+                    if (tmp[i].contains(","))
+                        tmp[i] = '[' + tmp[i] + ']';
+
+                    if(tmp[i].matches("[0-9]+")){
+                        Integer num = Integer.parseInt(tmp[i]);
+                        newDoc.append(tmp[i - 1], num);
+                    }
+                    else
+                        newDoc.append(tmp[i - 1], tmp[i]);
+                }
+
+                collection.insertOne(newDoc);
+
+
+                int i = 0;
+                for (Document doc : this.collection.find()) {
+                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
+                    ++i;
+                }
+
+                out.write(s);
+            }
+
+            else if (str.contains("/update")){
+                find = find.replace("=",",%20");
+                String [] tmp = find.split(",%20");
+
+
+                this.collection.deleteOne(new Document(tmp[0], new ObjectId(tmp[1])));
+                System.out.println(searchObj);
+
+                Document newDoc = new Document();
+
+                for (int i = 3; i < tmp.length; i+=2){
+                    if (tmp[i].contains(","))
+                        tmp[i] = '[' + tmp[i] + ']';
+
+                    if(tmp[i].matches("[0-9]+")){
+                        Integer num = Integer.parseInt(tmp[i]);
+                        newDoc.append(tmp[i - 1], num);
+                    }
+                    else
+                        newDoc.append(tmp[i - 1], tmp[i]);
+                }
+
+                collection.insertOne(newDoc);
+
+
+                int i = 0;
+                for (Document doc : this.collection.find()) {
+                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
+                    ++i;
+                }
 
                 out.write(s);
             }
@@ -215,25 +323,51 @@ class MyThread implements Runnable{
     }
 
     private void writeResponse(String str) throws IOException, URISyntaxException {
-        FileReader html = new FileReader("src/main/resources/index.html");
-        Scanner scan = new Scanner(html);
-        String tmp = scan.nextLine();
+        String s;
+
+        FileReader css = new FileReader("src/main/resources/style.css");
+        Scanner scan = new Scanner(css);
+        String CSS = "<style>";
         while(scan.hasNext())
-            tmp += scan.nextLine();
+            CSS += scan.nextLine();
+        CSS += "</style>";
+
+        FileReader js = new FileReader("src/main/resources/js.js");
+        scan = new Scanner(js);
+        String JS = "<script>";
+        while(scan.hasNext())
+            JS += scan.nextLine();
+        JS += "</script>";
+
+        FileReader html = new FileReader("src/main/resources/index.html");
+         scan = new Scanner(html);
+        String HTML= scan.nextLine();
+        while(scan.hasNext()) {
+            s = scan.nextLine();
+            HTML += s;
+
+            if(s.equals("</head>"))
+                HTML = HTML + CSS + JS;
+        }
+
+
 
         String response = "HTTP/1.1 200 OK\r\n" +
                 "Server: YarServer/2020-03-04\r\n" +
-                //"Content-Type: application/json\r\n" +
                 "Content-Type: text/html\r\n" +
-                "Content-Length:" + tmp.length() + "\r\n" +
+                "Content-Length:" + HTML.length() + "\r\n" +
                 "Connection: close\r\n\r\n";
-        String result = response;
-        result +=   tmp;
+
+
+        String result = response ;
+        result +=   HTML;
 
         System.out.println(result);
         if (str.length() == 0) out.write(result);
         out.flush();
     }
+
+
 }
 
 public class Main {
