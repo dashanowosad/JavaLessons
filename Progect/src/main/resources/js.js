@@ -5,7 +5,7 @@ function WatchText() {
     $("#dl").html(spin);
     $.ajax({
         method: 'GET',
-        url:'/get_all_users',
+        url:'/get_all_users&',
         success:function (data) {
 
             items.push(data);
@@ -99,7 +99,7 @@ function SortByName(){
 
     $.ajax({
         method: 'GET',
-        url: '/sort_by_name',
+        url: '/sort_by_name&',
         success: function (data) {
             items.push(data);
             $("#dl").html(items);
@@ -118,7 +118,7 @@ function SortByAge(){
 
     $.ajax({
         method: 'GET',
-        url: '/sort_by_age',
+        url: '/sort_by_age&',
         success: function (data) {
             items.push(data);
             $("#dl").html(items);

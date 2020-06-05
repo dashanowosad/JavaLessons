@@ -8,21 +8,15 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Scanner;
-
-import java.util.Comparator;
 
 
 class Base{
@@ -30,15 +24,6 @@ class Base{
 
     //private String status;
     private ArrayList <String> Spis;
-
-
-    /*public String getStatus() {
-        return status;
-    }*/
-
-    /*public void setStatus(String status) {
-        this.status = status;
-    }*/
 
 
     public ArrayList<String> getSpis() {
@@ -71,236 +56,299 @@ class MyThread implements Runnable{
     private String JsonToString() throws JsonProcessingException{
         ObjectMapper mappper = new ObjectMapper();
         Base base = new Base();
-        //base.setStatus("OK");
 
-
-        //BasicDBObject sortObj = new BasicDBObject();
-        //sortObj.append("name",1);
         ArrayList <String> str = new ArrayList<>();
         int  i= 0;
         for(Document doc: this.collection.find()) {
-            str.add("<dt id =" + i+ " onclick=UpdateModal(this)>" +doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>");
-            //System.out.println(doc.toString());
+            str.add("<dt id =" + i+ " onclick=UpdateModal(this)>" +doc.toString().replace("Document", "")
+                    .replace("{", "")
+                    .replace("}", "") + "</dt>");
             ++i;
         }
             base.setSpis(str);
-
-
-
-
-
         return mappper.writeValueAsString(base);
     }
 
     private String Check() throws JsonProcessingException  {
         String str = null;
         String find = null;
-
-        String str1 = null, str2 = null;
-        String sign = null;
-
-        BasicDBObject searchObj = new BasicDBObject();
-        BasicDBObject changeObj = new BasicDBObject();
-        BasicDBObject sortObj = new BasicDBObject();
-
-        Integer number1 = null, number2 = null;
-
-        ArrayList <String> S = new ArrayList<>();
-
-        String s = "";
-
-
+        String response = "";
 
         if(in.hasNext()){
             str = in.nextLine();
-
-
             find = str.substring(str.indexOf('&') + 1, str.length());
             find = find.substring(0, find.indexOf(' '));
 
-            if(str.contains("/get_all_users")) {
-                s = JsonToString();
-                s = s.replace("{\"spis\":[\"","").replace("\",\"", "").replace("\"]}","");
-                out.write(s.toString());
+            if (str.contains("/get_all_users")) {
+                response = GetAllUsers();
+                System.out.println(response);
             }
             else if (str.contains("/sort_by_name")){
-
-                sortObj.append("name",1);
-                int i = 0;
-                for (Document doc : this.collection.find().sort(sortObj)) {
-                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
-                    ++i;
-                }
-                out.write(s);
-
+                response = SortByName();
+                System.out.println(response);
             }
-
             else if (str.contains("/sort_by_age")){
-
-                sortObj.append("age",1);
-                int i = 0;
-                for (Document doc : this.collection.find().sort(sortObj)) {
-                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
-                    ++i;
-                }
-                out.write(s);
-
+                response = SortByAge();
+                System.out.println(response);
             }
-            else if(str.contains("/find")){
-
-                if(!str.contains("%3E") && !str.contains("%3C")){
-                    str1 = find.substring(0, find.indexOf('&'));
-                    str2 = find.substring(find.indexOf('&') + 1, find.length());
-
-                    if(str2.matches("[0-9]+")) {
-                        number1 = Integer.valueOf(str2);
-                        searchObj.append(str1, number1);
-                    }
-                    else
-                        searchObj.append(str1, str2);
-                }
-
-                else{
-                    str1 = find.substring(0, find.indexOf('&'));
-                    sign = find.substring(find.indexOf('&') + 1, find.indexOf('&') + 4);
-                    str2 = find.substring(find.indexOf('&') + 4, find.length());
-
-                    if(sign.equals("%3C"))
-                        sign = "$lt";
-                    else if (sign.equals("%3E"))
-                        sign = "$gt";
-
-                    if(str2.matches("[0-9]+")) {
-                        number1 = Integer.valueOf(str2);
-                        searchObj.append(str1, new BasicDBObject(sign,number1));
-                    }
-
-                }
-                int i = 0;
-                for (Document doc : this.collection.find(searchObj)) {
-                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
-                    ++i;
-                }
-                if(s.length() == 0)
-                    s +="<dt>" + "Not found" + "</dt>";
-
-                out.write(s);
-
+            else if (str.contains("/find")){
+                response = FindDocuments(find);
+                System.out.println(response);
             }
-
             else if (str.contains("/delete")){
-                if(!str.contains("%3E") && !str.contains("%3C")){
-                    str1 = find.substring(0, find.indexOf('&'));
-                    str2 = find.substring(find.indexOf('&') + 1, find.length());
-
-                    if(str2.matches("[0-9]+")) {
-                        number1 = Integer.valueOf(str2);
-                        searchObj.append(str1, number1);
-                    }
-                    else
-                        searchObj.append(str1, str2);
-                    System.out.println(searchObj);
-                }
-
-                else{
-                    str1 = find.substring(0, find.indexOf('&'));
-                    sign = find.substring(find.indexOf('&') + 1, find.indexOf('&') + 4);
-                    str2 = find.substring(find.indexOf('&') + 4, find.length());
-
-                    if(sign.equals("%3C"))
-                        sign = "$lt";
-                    else if (sign.equals("%3E"))
-                        sign = "$gt";
-
-                    if(str2.matches("[0-9]+")) {
-                        number1 = Integer.valueOf(str2);
-                        searchObj.append(str1, new BasicDBObject(sign,number1));
-                    }
-
-                }
-                this.collection.deleteMany(searchObj);
-
-                int i = 0;
-                for (Document doc : this.collection.find()) {
-                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
-                    ++i;
-                }
-
-                if(s.length() == 0)
-                    s +="<dt>" + "Not found and not delete" + "</dt>";
-
-                out.write(s);
+                response = DeleteDocuments(find);
+                System.out.println(response);
             }
-
-            else if(str.contains("/insert")){
-                find = find.replace("%20","");
-
-
-                String[] tmp = find.split("&");
-
-                Document newDoc = new Document();
-
-                for (int i = 1; i < tmp.length; i+=2){
-                    if (tmp[i].contains(","))
-                        tmp[i] = '[' + tmp[i] + ']';
-
-                    if(tmp[i].matches("[0-9]+")){
-                        Integer num = Integer.parseInt(tmp[i]);
-                        newDoc.append(tmp[i - 1], num);
-                    }
-                    else
-                        newDoc.append(tmp[i - 1], tmp[i]);
-                }
-
-                collection.insertOne(newDoc);
-
-
-                int i = 0;
-                for (Document doc : this.collection.find()) {
-                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
-                    ++i;
-                }
-
-                out.write(s);
+            else if (str.contains("/insert")){
+                response = InsertDocumets(find);
             }
 
             else if (str.contains("/update")){
-                find = find.replace("=",",%20");
-                String [] tmp = find.split(",%20");
+                response = UpdateDocuments(find);
+                System.out.println(response);
+            }
+        }
 
+        return response;
+    }
 
-                this.collection.deleteOne(new Document(tmp[0], new ObjectId(tmp[1])));
-                System.out.println(searchObj);
+    private String UpdateDocuments(String find) {
+        StringBuilder response = new StringBuilder();
+        BasicDBObject searchObj = new BasicDBObject();
+        find = find.replace("=",",%20");
+        String [] tmp = find.split(",%20");
 
-                Document newDoc = new Document();
+        this.collection.deleteOne(new Document(tmp[0], new ObjectId(tmp[1])));
+        System.out.println(searchObj);
 
-                for (int i = 3; i < tmp.length; i+=2){
-                    if (tmp[i].contains(","))
-                        tmp[i] = '[' + tmp[i] + ']';
+        Document newDoc = new Document();
 
-                    if(tmp[i].matches("[0-9]+")){
-                        Integer num = Integer.parseInt(tmp[i]);
-                        newDoc.append(tmp[i - 1], num);
-                    }
-                    else
-                        newDoc.append(tmp[i - 1], tmp[i]);
-                }
+        for (int i = 3; i < tmp.length; i+=2){
+            if (tmp[i].contains(","))
+                tmp[i] = '[' + tmp[i] + ']';
 
-                collection.insertOne(newDoc);
+            if(tmp[i].matches("[0-9]+")){
+                Integer num = Integer.parseInt(tmp[i]);
+                newDoc.append(tmp[i - 1], num);
+            }
+            else
+                newDoc.append(tmp[i - 1], tmp[i]);
+        }
 
+        collection.insertOne(newDoc);
 
-                int i = 0;
-                for (Document doc : this.collection.find()) {
-                    s += "<dt id =" + i + " onclick=UpdateModal(this)>" + doc.toString().replace("Document", "").replace("{", "").replace("}", "") + "</dt>";
-                    ++i;
-                }
+        int i = 0;
+        for (Document doc : this.collection.find()) {
+            response.append("<dt id =")
+                    .append(i)
+                    .append(" onclick=UpdateModal(this)>")
+                    .append(doc.toString()
+                            .replace("Document", "")
+                            .replace("{", "")
+                            .replace("}", ""))
+                    .append("</dt>");
+            ++i;
+        }
 
-                out.write(s);
+        out.write(response.toString());
+        return response.toString();
+    }
+
+    private String InsertDocumets(String find) {
+        StringBuilder response = new StringBuilder();
+        find = find.replace("%20","");
+        String[] tmp = find.split("&");
+        Document newDoc = new Document();
+        for (int i = 1; i < tmp.length; i+=2){
+            if (tmp[i].contains(","))
+                tmp[i] = '[' + tmp[i] + ']';
+
+            if(tmp[i].matches("[0-9]+")){
+                Integer num = Integer.parseInt(tmp[i]);
+                newDoc.append(tmp[i - 1], num);
+            }
+            else
+                newDoc.append(tmp[i - 1], tmp[i]);
+        }
+        collection.insertOne(newDoc);
+
+        int i = 0;
+        for (Document doc : this.collection.find()) {
+            response.append("<dt id =")
+                    .append(i)
+                    .append(" onclick=UpdateModal(this)>")
+                    .append(doc.toString()
+                            .replace("Document", "")
+                            .replace("{", "")
+                            .replace("}", ""))
+                    .append("</dt>");
+            ++i;
+        }
+
+        out.write(response.toString());
+        return response.toString();
+    }
+
+    private String DeleteDocuments(String find) {
+        StringBuilder response = new StringBuilder();
+        String tmpStr1 = null;
+        String tmpStr2 = null;
+        String sign = null;
+        int tmpNumber, i = 0;
+        BasicDBObject searchObj = new BasicDBObject();
+        if(!find.contains("%3E") && !find.contains("%3C")){
+            tmpStr1 = find.substring(0, find.indexOf('&'));
+            tmpStr2 = find.substring(find.indexOf('&') + 1, find.length());
+
+            if(tmpStr2.matches("[0-9]+")) {
+                tmpNumber = Integer.parseInt(tmpStr2);
+                searchObj.append(tmpStr1, tmpNumber);
+            }
+            else
+                searchObj.append(tmpStr1, tmpStr2);
+        }
+        else{
+            tmpStr1 = find.substring(0, find.indexOf('&'));
+            sign = find.substring(find.indexOf('&') + 1, find.indexOf('&') + 4);
+            tmpStr2 = find.substring(find.indexOf('&') + 4, find.length());
+
+            if(sign.equals("%3C"))
+                sign = "$lt";
+            else if (sign.equals("%3E"))
+                sign = "$gt";
+
+            if(tmpStr2.matches("[0-9]+")) {
+                tmpNumber = Integer.parseInt(tmpStr2);
+                searchObj.append(tmpStr1, new BasicDBObject(sign,tmpNumber));
             }
 
         }
+        this.collection.deleteMany(searchObj);
+        i = 0;
+        for (Document doc : this.collection.find()) {
+            response.append("<dt id =")
+                    .append(i)
+                    .append(" onclick=UpdateModal(this)>")
+                    .append(doc.toString()
+                            .replace("Document", "")
+                            .replace("{", "")
+                            .replace("}", ""))
+                    .append("</dt>");
+            ++i;
+        }
+        if(response.length() == 0)
+            response.append("<dt>" + "Not found" + "</dt>");
 
-        return s;
+        out.write(response.toString());
+        return response.toString();
+    }
+
+    private String FindDocuments(String find) {
+        StringBuilder response = new StringBuilder();
+        String tmpStr1 = null;
+        String tmpStr2 = null;
+        String sign = null;
+        int tmpNumber, i = 0;
+        BasicDBObject searchObj = new BasicDBObject();
+        if(!find.contains("%3E") && !find.contains("%3C")){
+            tmpStr1 = find.substring(0, find.indexOf('&'));
+            tmpStr2 = find.substring(find.indexOf('&') + 1, find.length());
+
+            if(tmpStr2.matches("[0-9]+")) {
+                tmpNumber = Integer.parseInt(tmpStr2);
+                searchObj.append(tmpStr1, tmpNumber);
+            }
+            else
+                searchObj.append(tmpStr1, tmpStr2);
+        }
+
+        else{
+            tmpStr1 = find.substring(0, find.indexOf('&'));
+            sign = find.substring(find.indexOf('&') + 1, find.indexOf('&') + 4);
+            tmpStr2 = find.substring(find.indexOf('&') + 4, find.length());
+
+            if(sign.equals("%3C"))
+                sign = "$lt";
+            else if (sign.equals("%3E"))
+                sign = "$gt";
+
+            if(tmpStr2.matches("[0-9]+")) {
+                tmpNumber = Integer.parseInt(tmpStr2);
+                searchObj.append(tmpStr1, new BasicDBObject(sign,tmpNumber));
+            }
+
+        }
+        for (Document doc : this.collection.find(searchObj)) {
+            response.append("<dt id =")
+                    .append(i)
+                    .append(" onclick=UpdateModal(this)>")
+                    .append(doc.toString()
+                            .replace("Document", "")
+                            .replace("{", "")
+                            .replace("}", ""))
+                    .append("</dt>");
+            ++i;
+        }
+        if(response.length() == 0)
+            response.append("<dt>" + "Not found" + "</dt>");
+
+        out.write(response.toString());
+        return response.toString();
+    }
+
+    private String SortByAge() {
+        StringBuilder tmpString = new StringBuilder();
+        BasicDBObject sortObj = new BasicDBObject();
+        sortObj.append("age",1);
+        int i = 0;
+        for (Document doc : this.collection.find().sort(sortObj)) {
+            assert tmpString != null;
+            tmpString.append("<dt id =")
+                    .append(i)
+                    .append(" onclick=UpdateModal(this)>")
+                    .append(doc.toString()
+                    .replace("Document", "")
+                    .replace("{", "")
+                    .replace("}", ""))
+                    .append("</dt>");
+            ++i;
+        }
+
+        assert tmpString != null;
+        out.write(tmpString.toString());
+        return tmpString.toString();
+    }
+
+    String GetAllUsers() throws JsonProcessingException {
+        String response;
+        response = JsonToString();
+        response = response.replace("{\"spis\":[\"","")
+                .replace("\",\"", "")
+                .replace("\"]}","");
+        out.write(response.toString());
+        return response;
+    }
+
+    String SortByName(){
+        StringBuilder tmpString = new StringBuilder();
+        BasicDBObject sortObj = new BasicDBObject();
+        sortObj.append("name",1);
+        Integer i = 0;
+        for (Document doc : this.collection.find().sort(sortObj)) {
+            assert false;
+            tmpString.append("<dt id =")
+                    .append(i)
+                    .append(" onclick=UpdateModal(this)>")
+                    .append(doc.toString()
+                            .replace("Document", "")
+                            .replace("{", "")
+                            .replace("}", ""))
+                    .append("</dt>");
+            ++i;
+        }
+        assert false;
+        out.write(tmpString.toString());
+        return tmpString.toString();
     }
 
     @Override
@@ -324,7 +372,6 @@ class MyThread implements Runnable{
 
     private void writeResponse(String str) throws IOException, URISyntaxException {
         String s;
-
         FileReader css = new FileReader("src/main/resources/style.css");
         Scanner scan = new Scanner(css);
         String CSS = "<style>";
@@ -350,23 +397,17 @@ class MyThread implements Runnable{
                 HTML = HTML + CSS + JS;
         }
 
-
-
-        String response = "HTTP/1.1 200 OK\r\n" +
+        String result = "HTTP/1.1 200 OK\r\n" +
                 "Server: YarServer/2020-03-04\r\n" +
                 "Content-Type: text/html\r\n" +
                 "Content-Length:" + HTML.length() + "\r\n" +
                 "Connection: close\r\n\r\n";
-
-
-        String result = response ;
         result +=   HTML;
 
         System.out.println(result);
         if (str.length() == 0) out.write(result);
         out.flush();
     }
-
 
 }
 
